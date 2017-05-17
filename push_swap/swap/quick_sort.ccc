@@ -1,0 +1,139 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   quick_sort.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: apalanic <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2017/03/20 18:47:18 by apalanic          #+#    #+#             */
+/*   Updated: 2017/03/20 19:27:06 by apalanic         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "push_swap.h"
+
+static t_bool	sorted_piece(t_llist *node, int len, t_bool stack_a)
+{
+	int		i;
+	t_stack	*tmp;
+
+	i = 0;
+	if (node == NULL)
+		return (FALSE);
+	if (stack_a == TRUE)
+		tmp = node->a;
+	else
+		tmp = node->b;
+	while (tmp && stack_a && i++ < len)
+	{
+		if (tmp->next != NULL && tmp->data > tmp->next->data)
+			return (FALSE);
+		tmp = tmp->next;
+	}
+	while (tmp && !stack_a && i++ < len)
+	{
+		if (tmp->next != NULL && tmp->data < tmp->next->data)
+			return (FALSE);
+		tmp = tmp->next;
+	}
+	return (TRUE);
+}
+
+static void		fcking_sort(t_llist *node, int len, t_bool is_a)
+{
+	if ((node->size_a > 1 && node->size_b > 1) &&
+		A_FIRST > A_SECOND && B_FIRST < B_SECOND)
+		swap_both(node);
+	if (is_a && node->size_a < 4)
+		sort_short_stack(node, len, is_a);
+	else if (!is_a && node->size_b < 4)
+		sort_short_stack(node, len, is_a);
+	else if (is_a && len == 2 && A_FIRST > A_SECOND)
+		swap_a(node, TRUE);
+	else if (!is_a && len == 2 && B_FIRST < B_SECOND)
+		swap_b(node, TRUE);
+	else if (is_a && len == 3 && !sorted(node, TRUE))
+		sort_three_a(node);
+	else if (!is_a && len == 3 && !sorted(node, FALSE))
+		sort_three_b(node);
+}
+
+static void		quick_sort_b(t_llist *node, int len, int i)
+{
+	int rotate;
+	int push;
+	int	med;
+
+	push = 0;
+	rotate = 0;
+	(len < 4) ? (fcking_sort(node, len, FALSE)) : (0);
+	if (len < 4)
+		return ;
+
+	med = find_med(node, len, FALSE);
+	// ft_printf("BBB1 sortA:%d sortB%d len:%d push:%d rot:%d A:%d B:%d i:%d\n",
+	// sorted(node, TRUE), sorted(node, FALSE), len, push , rotate, node->size_a, node->size_b, i);
+	// if (!sorted_piece(node, len, FALSE))
+	// {
+		while (i++ < len && is_lower_big_med(node->b, med, len - i, FALSE))
+		{
+			(B_FIRST > med) ? (push++) : (rotate++);
+			(B_FIRST > med) ? (push_a(node)) : (rotate_b(node, TRUE));
+		}
+		(!sorted(node, TRUE)) ? quick_sort_a(node, push, 0) : (0);
+		if (rotate > (node->size_b / 2) && node->size_b > 3 && len != node->size_a)
+			while (rotate++ < node->size_b)
+				rotate_b(node, TRUE);
+		else if (node->size_b > 3  && len != node->size_b)
+			while (rotate--)
+				rev_rotate_b(node, TRUE);
+		(!sorted(node, FALSE)) ? quick_sort_b(node, (len - push), 0) : (0);
+		// ft_printf("BBB2 sortA:%d sortB%d len:%d push:%d rot:%d A:%d B:%d i:%d\n",
+		// sorted(node, TRUE), sorted(node, FALSE), len, push , rotate, node->size_a, node->size_b, i);
+		if ((!sorted(node, TRUE) || !sorted(node, FALSE)))
+		while (push-- && node->size_a > 3)
+			push_b(node);
+	// }
+	// else
+	// 	push_a(node);
+}
+
+void			quick_sort_a(t_llist *node, int len, int i)
+{
+	int	rotate;
+	int	push;
+	int	med;
+
+	push = 0;
+	rotate = 0;
+	(len < 4) ? (fcking_sort(node, len, TRUE)) : (0);
+	if (len < 4)
+		return ;
+	med = find_med(node, len, TRUE);
+	// ft_printf("AAA1 sortA:%d sortB%d len:%d push:%d rot:%d A:%d B:%d i:%d\n",
+	// sorted(node, TRUE), sorted(node, FALSE), len, push , rotate, node->size_a, node->size_b, i);
+	if (!sorted(node, TRUE))
+	{
+	while (i++ < len && is_lower_big_med(node->a, med, len - i, TRUE))
+	{
+		// if (sorted_piece(node, len - push, TRUE))
+		// 	break ;
+		(A_FIRST < med) ? (push++) : (rotate++);
+		(A_FIRST < med) ? push_b(node) : rotate_a(node, TRUE);
+	}
+	if (rotate > (node->size_a / 2) && node->size_a > 3 && len != node->size_a)
+		while (rotate++ < node->size_a)
+			rotate_a(node, TRUE);
+	else if (node->size_a > 3 && len != node->size_a)
+		while (rotate--)
+			rev_rotate_a(node, TRUE);
+	(!sorted(node, TRUE)) ? quick_sort_a(node, (len - push), 0) : (0);
+	(!sorted(node, FALSE)) ? quick_sort_b(node, push, 0) : (0);
+	// ft_printf("AAA2 sortA:%d sortB%d len:%d push:%d rot:%d A:%d B:%d i:%d\n",
+//	sorted(node, TRUE), sorted(node, FALSE), len, push , rotate, node->size_a, node->size_b, i);
+//if (!sorted(node, TRUE) || !sorted(node, FALSE))
+	while (push-- && node->size_b)
+		push_a(node);
+	}
+
+}
